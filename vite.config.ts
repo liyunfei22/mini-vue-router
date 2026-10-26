@@ -9,6 +9,8 @@ export default defineConfig({
     },
   },
   build: {
+    // demo 产物与库产物(dist/,tsc 产出)分开
+    outDir: 'dist-demo',
     rollupOptions: {
       input: {
         index: fileURLToPath(new URL('./index.html', import.meta.url)),
