@@ -49,7 +49,7 @@ export interface RouterErrorParams {
 
 const messageMap: Record<number, (params: RouterErrorParams) => string> = {
   [ErrorTypes.MATCHER_NOT_FOUND]: params =>
-    `Route with name '${String(params.name)}' does not exist`,
+    `No match for\n ${JSON.stringify(params.location, null, 2)}`,
   [ErrorTypes.NAVIGATION_GUARD_REDIRECT]: params =>
     `Redirected from "${params.from.fullPath}" to "${params.to}" via a navigation guard.`,
   [ErrorTypes.NAVIGATION_ABORTED]: params =>

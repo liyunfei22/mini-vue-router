@@ -7,9 +7,14 @@ export {
   RouterLink,
   RouterView,
   START_LOCATION,
+  onBeforeRouteLeave,
+  onBeforeRouteUpdate,
+  onBeforeRouteEnter,
+  useRouter,
+  useRoute,
 } from './router'
 export { NavigationFailureType, isNavigationFailure } from './errors'
-export type { NavigationFailure } from './errors'
+export type { NavigationFailure, NavigationRedirectError } from './errors'
 export type {
   Router,
   RouterOptions,
@@ -19,7 +24,13 @@ export { createWebHistory } from './history/html5'
 export { createWebHashHistory } from './history/hash'
 export { createMemoryHistory } from './history/memory'
 
-export { routerKey, routerViewLocationKey, viewDepthKey } from './types'
+export {
+  routerKey,
+  routerViewLocationKey,
+  viewDepthKey,
+  matchedRouteKey,
+  routeLocationKey,
+} from './types'
 export type {
   RouteLocation,
   RouteLocationNormalized,
@@ -45,6 +56,10 @@ export type {
   RouterLinkProps,
   RouterViewProps,
   RouterLinkSlotContext,
+  History,
 } from './types'
 
-export type { History, HistoryLocation, NavigationHistoryState } from './history/common'
+export { useLink } from './components/RouterLink'
+export type { UseLinkOptions } from './components/RouterLink'
+export type { HistoryLocation, NavigationHistoryState } from './history/common'
+export type { TokenParser, PathToken } from './matcher/pathTokenizer'

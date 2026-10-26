@@ -44,6 +44,20 @@ export interface RouteRecordNormalized {
   beforeEnter?: NavigationGuard | NavigationGuard[]
   meta: RouteMeta
   children: RouteRecordNormalized[]
+
+  /** alias 记录指向主记录(官方同款:isSameRouteRecord 用 (aliasOf || record) 比较) */
+  aliasOf?: RouteRecordNormalized
+
+  // ---- 以下由 matcher 编译时填充 / 运行期使用 ----
+  /** 记录路径上的参数信息(从 parser 拷贝,RouterLink active 判定用) */
+  keys?: Array<{ name: string; repeatable: boolean; optional: boolean }>
+  /** 挂载中的组件实例表(按视图名,懒加载与守卫用) */
+  instances?: Record<string, any>
+  /** 组合式 API 注册的路由级守卫(onBeforeRouteLeave 等写入) */
+  leaveGuards?: Set<NavigationGuard>
+  updateGuards?: Set<NavigationGuard>
+  /** beforeRouteEnter 的 next(vm) 回调队列(按视图名),由 RouterView 挂载后触发 */
+  enterCallbacks?: Record<string, Array<(vm: any) => any>>
 }
 
 export type RouteRecordName = string | symbol
@@ -188,6 +202,8 @@ export declare type _ScrollPosition =
 export interface Router {
   readonly currentRoute: Ref<RouteLocationNormalizedLoaded>
   readonly options: RouterOptions
+  /** 置 false 可暂时挂起浏览器地址变化触发的导航(官方同款) */
+  listening: boolean
 
   push(to: RouteLocationRaw): Promise<NavigationFailure | void | undefined>
   replace(to: RouteLocationRaw): Promise<NavigationFailure | void | undefined>
@@ -227,6 +243,11 @@ export const routerViewLocationKey: InjectionKey<Ref<RouteLocationNormalizedLoad
   Symbol('mini router view location')
 /** RouterView 的深度注入键:嵌套 RouterView 每深一层 depth + 1 */
 export const viewDepthKey: InjectionKey<Ref<number>> = Symbol('mini router view depth')
+/** RouterView 提供"当前深度匹配到的记录",组合式守卫(onBeforeRouteXxx)用它注册 */
+export const matchedRouteKey: InjectionKey<Ref<RouteRecordNormalized | undefined>> =
+  Symbol('mini router matched route')
+/** useRoute() 注入键:route 的浅响应式代理 */
+export const routeLocationKey: InjectionKey<RouteLocationNormalizedLoaded> = Symbol('mini router route')
 
 // ------------------------------------------------------------------
 // 组件 props 类型

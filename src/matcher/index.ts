@@ -110,6 +110,11 @@ function normalizeRouteRecord(
     beforeEnter: record.beforeEnter,
     meta: record.meta || {},
     children: [],
+    // 运行期字段(守卫注册 / 组件实例 / next(vm) 回调)
+    instances: {},
+    leaveGuards: new Set(),
+    updateGuards: new Set(),
+    enterCallbacks: {},
   }
   return normalized
 }
@@ -153,21 +158,24 @@ export function createRouterMatcher(routes: RouteRecordRaw[]): {
 
   /** 创建 matcher(含 alias),插入索引 */
   function createRouteRecordMatcher(record: RouteRecordNormalized, parent?: Matcher, aliasOf?: Matcher): Matcher {
+    const parser = tokensToParser(record.path)
+    // 把参数 keys 拷到记录上(RouterLink 的 active 判定要用)
+    ;(record as any).keys = parser.keys
     const matcher: Matcher = {
       record,
       parent,
       children: [],
-      parser: tokensToParser(record.path),
+      parser,
       aliasOf,
       aliases: [],
     }
     insertMatcher(matcher)
 
     if (record.name) {
-      if (nameToMatcher.has(record.name)) {
-        warn(`Duplicate route name: "${String(record.name)}". This may lead to unexpected behavior.`)
-      }
       if (!aliasOf) {
+        if (nameToMatcher.has(record.name)) {
+          warn(`Duplicate route name: "${String(record.name)}". This may lead to unexpected behavior.`)
+        }
         // alias 不占用名称:按名字跳转永远解析到主记录
         nameToMatcher.set(record.name, matcher)
       }
@@ -206,18 +214,16 @@ export function createRouterMatcher(routes: RouteRecordRaw[]): {
     const matcher = createRouteRecordMatcher(normalized, parent)
     parent?.children.push(matcher)
 
-    // alias:共享同一 record(主记录的 path/name/redirect 保持),只编译 alias 路径的解析器
+    // alias:记录复制一份(path 为别名路径,官方同款),aliasOf 指向主记录
+    // —— alias 命中时 matched 链里的记录 path 是别名路径,name/redirect 仍是主记录的
     if (normalized.alias) {
       for (const aliasPath of normalized.alias) {
-        const aliasMatcher: Matcher = {
-          record: normalized,
-          parent,
-          children: [],
-          parser: tokensToParser(aliasPath),
-          aliasOf: matcher,
-          aliases: [],
+        const aliasRecord: RouteRecordNormalized = {
+          ...normalized,
+          path: aliasPath,
+          aliasOf: normalized,
         }
-        insertMatcher(aliasMatcher)
+        const aliasMatcher = createRouteRecordMatcher(aliasRecord, parent, matcher)
         matcher.aliases.push(aliasMatcher)
       }
     }
@@ -241,15 +247,12 @@ export function createRouterMatcher(routes: RouteRecordRaw[]): {
 
     if (normalized.alias) {
       for (const aliasPath of normalized.alias) {
-        const aliasMatcher: Matcher = {
-          record: normalized,
-          parent,
-          children: [],
-          parser: tokensToParser(aliasPath),
-          aliasOf: matcher,
-          aliases: [],
+        const aliasRecord: RouteRecordNormalized = {
+          ...normalized,
+          path: aliasPath,
+          aliasOf: normalized,
         }
-        insertMatcher(aliasMatcher)
+        const aliasMatcher = createRouteRecordMatcher(aliasRecord, parent, matcher)
         matcher.aliases.push(aliasMatcher)
       }
     }
@@ -421,7 +424,9 @@ export function createRouterMatcher(routes: RouteRecordRaw[]): {
     }
 
     // 3. 组装结果
-    const name = explicitName ?? matcher?.record.name
+    // name 取 matched 链最后一条记录的 name(官方同款:
+    // '/parent' 的 '' 子路由在最深处,resolve 的 name 是它)
+    const name = explicitName ?? (chain.length ? chain[chain.length - 1]!.record.name : undefined)
     return makeResult(path, query, hash, chain, params, name)
   }
 

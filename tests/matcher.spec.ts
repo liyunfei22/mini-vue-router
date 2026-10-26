@@ -151,12 +151,13 @@ describe('嵌套路由', () => {
 })
 
 describe('alias 与 redirect', () => {
-  it('别名路径命中主记录,但 path 保持实际访问路径', () => {
+  it('别名路径命中主记录:matched 记录 path 是别名路径,name 是主记录名(官方同)', () => {
     const matcher = makeMatcher()
     const { location } = matcher.resolve('/alias-alt')
     expect(location.name).toBe('alias-main')
     expect(location.path).toBe('/alias-alt')
-    expect(location.matched[0]!.path).toBe('/alias-main')
+    expect(location.matched[0]!.path).toBe('/alias-alt')
+    expect(location.matched[0]!.name).toBe('alias-main')
   })
 
   it('redirect 记录:rewrite 目标挂在记录上,由 router 层消费', () => {

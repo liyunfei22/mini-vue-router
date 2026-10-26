@@ -111,6 +111,16 @@ export function isSameRouteLocationParamsCompare(
   return true
 }
 
+/**
+ * 记录同一性(官方同款):alias 记录透视到主记录再比较
+ */
+export function isSameRouteRecord(
+  a: { aliasOf?: object },
+  b: { aliasOf?: object },
+): boolean {
+  return (a.aliasOf || a) === (b.aliasOf || b)
+}
+
 // ------------------------------------------------------------------
 // query 解析
 // ------------------------------------------------------------------
