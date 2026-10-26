@@ -153,10 +153,12 @@ export interface History {
   /** 当前规范化 location(不含 base 前缀) */
   location: string
   /** 订阅导航事件(URL 变化 / go 移动);返回取消订阅函数 */
-  listen(cb: (to: string, from: { location: string; state: unknown }) => void): () => void
+  listen(cb: (to: string, from: string) => void): () => void
   push(to: string, data?: unknown): void
   replace(to: string, data?: unknown): void
   go(delta: number): void
+  /** 把规范化 location 拼成完整 URL(含 base;RouterLink href 用) */
+  createHref(location: string): string
 }
 
 // ------------------------------------------------------------------

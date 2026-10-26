@@ -9,6 +9,7 @@ export {
   START_LOCATION,
 } from './router'
 export { NavigationFailureType, isNavigationFailure } from './errors'
+export type { NavigationFailure } from './errors'
 export type {
   Router,
   RouterOptions,
@@ -39,7 +40,6 @@ export type {
   NavigationGuard,
   NavigationGuardNext,
   NavigationGuardReturn,
-  NavigationFailure,
   RouterComponentInstance,
   RouteComponentInstance,
   RouterLinkProps,
