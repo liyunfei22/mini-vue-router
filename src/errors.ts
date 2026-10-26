@@ -48,16 +48,16 @@ export interface RouterErrorParams {
 }
 
 const messageMap: Record<number, (params: RouterErrorParams) => string> = {
-  [ErrorTypes.MATCHER_NOT_FOUND]: ({ name }) =>
-    `Route with name '${String(name)}' does not exist`,
-  [ErrorTypes.NAVIGATION_GUARD_REDIRECT]: ({ from, to }) =>
-    `Redirected from "${from.fullPath}" to "${to}" via a navigation guard.`,
-  [ErrorTypes.NAVIGATION_ABORTED]: ({ from, to }) =>
-    `Navigation aborted from "${from.fullPath}" to "${to}" via a navigation guard.`,
-  [ErrorTypes.NAVIGATION_CANCELLED]: ({ from, to }) =>
-    `Navigation cancelled from "${from.fullPath}" to "${to}" with a new navigation.`,
-  [ErrorTypes.NAVIGATION_DUPLICATED]: ({ from, to }) =>
-    `Navigated to "${to.fullPath}" which already lies at the path of "from". It won't create a new entry during navigation.`,
+  [ErrorTypes.MATCHER_NOT_FOUND]: params =>
+    `Route with name '${String(params.name)}' does not exist`,
+  [ErrorTypes.NAVIGATION_GUARD_REDIRECT]: params =>
+    `Redirected from "${params.from.fullPath}" to "${params.to}" via a navigation guard.`,
+  [ErrorTypes.NAVIGATION_ABORTED]: params =>
+    `Navigation aborted from "${params.from.fullPath}" to "${params.to}" via a navigation guard.`,
+  [ErrorTypes.NAVIGATION_CANCELLED]: params =>
+    `Navigation cancelled from "${params.from.fullPath}" to "${params.to}" with a new navigation.`,
+  [ErrorTypes.NAVIGATION_DUPLICATED]: params =>
+    `Navigated to "${params.to.fullPath}" which already lies at the path of "from". It won't create a new entry during navigation.`,
 }
 
 export function createRouterError(
@@ -82,7 +82,7 @@ export function isNavigationFailure(
 ): error is NavigationFailure {
   return (
     error instanceof Error &&
-    error.type !== undefined &&
-    (type == null || error.type === type)
+    (error as NavigationFailure).type !== undefined &&
+    (type == null || (error as NavigationFailure).type === type)
   )
 }

@@ -9,7 +9,7 @@ import type {
   InjectionKey,
   Ref,
 } from 'vue'
-import type { History } from './history/common'
+import type { NavigationFailure } from './errors'
 
 // ------------------------------------------------------------------
 // 路由记录 (Route Records)
@@ -37,7 +37,8 @@ export interface RouteRecordRaw {
 export interface RouteRecordNormalized {
   path: string
   name?: RouteRecordName
-  components: RouteComponents
+  /** 组件为 null 表示"分组节点"(官方称 phantom):占住 matched 链位置但不渲染 */
+  components: RouteComponents | null
   redirect?: RouteRecordRedirectOption
   alias?: string[]
   beforeEnter?: NavigationGuard | NavigationGuard[]
@@ -61,11 +62,17 @@ export type RouteRecordRedirectOption =
 
 /**
  * 解析后的参数对象。repeatable 参数(如 `:id*`)是数组
- * 官方类型:RouteParamsRaw 允许 string[] 传入,解析后 RouteParams 归一为 string|string[]
+ * 官方类型:RouteParamsRaw 允许 number/boolean 传入,解析后 RouteParams 归一为 string|string[]
  */
 export interface RouteParams {
   [key: string]: string | string[]
 }
+
+/** 用户传入的"宽松"参数(命名路由跳转时可传数字/布尔,会自动字符串化) */
+export type RouteParamsRaw = Record<
+  string,
+  string | number | boolean | (string | number | boolean)[] | null | undefined
+>
 
 /** query —— 值为 string | string[] | null(string[] 用于重复键,如 ?a=1&a=2) */
 export interface RouteQuery {
@@ -86,7 +93,7 @@ export interface RouteLocationPathRaw {
 
 export interface RouteLocationNamedRaw {
   name: RouteRecordName
-  params?: RouteParams
+  params?: RouteParamsRaw
   query?: RouteQuery
   hash?: string
 }
@@ -134,6 +141,23 @@ export type NavigationGuard = (
 ) => NavigationGuardReturn | Promise<NavigationGuardReturn>
 
 export type NavigationGuardReturn = void | boolean | RouteLocationRaw | Error
+
+// ------------------------------------------------------------------
+// history 层统一接口(memory / html5 / hash 三种实现)
+// 与官方 _History 接口一致,实现细节见 src/history/*.ts
+// ------------------------------------------------------------------
+
+export interface History {
+  /** 规范化后的 base(如 '/app/';hash 模式为 '/app/#/' 形态) */
+  base: string
+  /** 当前规范化 location(不含 base 前缀) */
+  location: string
+  /** 订阅导航事件(URL 变化 / go 移动);返回取消订阅函数 */
+  listen(cb: (to: string, from: { location: string; state: unknown }) => void): () => void
+  push(to: string, data?: unknown): void
+  replace(to: string, data?: unknown): void
+  go(delta: number): void
+}
 
 // ------------------------------------------------------------------
 // Router
@@ -235,3 +259,5 @@ export interface RouterLinkSlotContext {
 
 /** 组件实例(enterCallbacks 的 next(vm) 用) */
 export type RouterComponentInstance = ComponentPublicInstance
+/** 别名:官方旧版命名 RouteComponentInstance */
+export type RouteComponentInstance = RouterComponentInstance

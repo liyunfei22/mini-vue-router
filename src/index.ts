@@ -4,15 +4,11 @@
  */
 export {
   createRouter,
-  NavigationFailureType,
-  isNavigationFailure,
-  onBeforeRouteLeave,
-  onBeforeRouteUpdate,
-  onBeforeRouteEnter,
   RouterLink,
   RouterView,
   START_LOCATION,
 } from './router'
+export { NavigationFailureType, isNavigationFailure } from './errors'
 export type {
   Router,
   RouterOptions,
@@ -31,6 +27,7 @@ export type {
   RouteLocationPathRaw,
   RouteLocationNamedRaw,
   RouteParams,
+  RouteParamsRaw,
   RouteQuery,
   RouteMeta,
   RouteRecordRaw,
@@ -43,6 +40,7 @@ export type {
   NavigationGuardNext,
   NavigationGuardReturn,
   NavigationFailure,
+  RouterComponentInstance,
   RouteComponentInstance,
   RouterLinkProps,
   RouterViewProps,
